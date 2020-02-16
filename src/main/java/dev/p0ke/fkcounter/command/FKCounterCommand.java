@@ -37,9 +37,6 @@ public class FKCounterCommand extends CommandBase {
 		
 		if(args.length > 0 && args[0].equalsIgnoreCase("settings")) {
 			new DelayedTask(() -> Minecraft.getMinecraft().displayGuiScreen(new FKCounterSettingsGui()), 1);
-			
-		} else if(args.length > 0 && args[0].equalsIgnoreCase("forcetoggle")) {
-			FKCounterMod.instance().forceToggle();
 		} else if(args.length > 0 && args[0].equalsIgnoreCase("players")) {
 			if(killCounter == null) return;
 			String msg = "";
