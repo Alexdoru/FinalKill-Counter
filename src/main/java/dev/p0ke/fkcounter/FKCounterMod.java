@@ -70,14 +70,7 @@ public class FKCounterMod {
     		killCounter.onChatMessage(event);
     	}
     }
-    
-    @SubscribeEvent
-    public void onGuiShow(GuiOpenEvent event) {
-    	if(event.gui instanceof GuiDownloadTerrain) {
-    		killCounter = null;
-    	}
-    }
-    
+
     public void forceToggle() {
     	if(killCounter != null) {
     		killCounter = null;
