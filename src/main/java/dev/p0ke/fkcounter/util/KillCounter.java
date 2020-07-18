@@ -9,13 +9,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import dev.jeinton.mwutils.MwScoreboardParser;
+import dev.p0ke.fkcounter.FKCounterMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.FMLClientHandler;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class KillCounter {
 	
@@ -101,9 +105,15 @@ public class KillCounter {
 	private String[] prefixes;
 	private HashMap<String, Integer>[] teamKills;
 	private ArrayList<String> deadPlayers;
-	
+
+	private String gameId;
+
 	@SuppressWarnings("unchecked")
-	public KillCounter() {
+	public KillCounter(String gameId) {
+		this.gameId = gameId;
+
+		MinecraftForge.EVENT_BUS.register(this);
+
 		deadWithers = new boolean[TEAMS];
 		prefixes = new String[TEAMS];
 		teamKills = new HashMap[TEAMS];
@@ -114,9 +124,12 @@ public class KillCounter {
 		}
 	}
 	
-	
+	@SubscribeEvent
 	public void onChatMessage(ClientChatReceivedEvent event) {
-		
+		if (!FKCounterMod.isInMwGame()) {
+			return;
+		}
+
 		String rawMessage = event.message.getUnformattedText();
 		String colorMessage = event.message.getFormattedText();
 		
@@ -126,7 +139,7 @@ public class KillCounter {
 		if(rawMessage.equals(PREP_PHASE)) {
 			setTeamPrefixes();
 		}
-		
+
 		//Wither death detection
 		switch(rawMessage) {
 		case RED_WITHER_DEATH:
@@ -173,7 +186,10 @@ public class KillCounter {
 			}
 		}
 	}
-	
+
+	public String getGameId() {
+		return gameId;
+	}
 
 	public int getKills(int team) {
 		if(!isValidTeam(team)) { return 0; }
