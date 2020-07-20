@@ -4,9 +4,10 @@ import dev.jeinton.mwutils.event.MwGameIdChangeEvent;
 import dev.jeinton.mwutils.util.MinecraftUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.scoreboard.Scoreboard;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 
 public class MwScoreboardParser {
     private static MwScoreboardParser instance;
@@ -25,10 +26,9 @@ public class MwScoreboardParser {
         return instance;
     }
 
-    // TODO: Use a different event?
     @SubscribeEvent
-    public void onTick(ClientTickEvent event) {
-        if (event.phase == ClientTickEvent.Phase.START) {
+    public void onRenderGameOverlay(RenderGameOverlayEvent event) {
+        if (event.type != ElementType.TEXT) {
             return;
         }
 
