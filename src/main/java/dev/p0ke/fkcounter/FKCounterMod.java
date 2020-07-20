@@ -55,7 +55,7 @@ public class FKCounterMod {
     
     @SubscribeEvent
     public void onMwGameIdChange(MwGameIdChangeEvent event) {
-        if (event.type == MwGameIdChangeEvent.EventType.CONNECT) {
+        if (event.getType() == MwGameIdChangeEvent.EventType.CONNECT) {
             MwScoreboardData mwData = MwScoreboardParser.instance().getMwScoreboardData();
             if (killCounter == null || !killCounter.getGameId().equals(mwData.getGameId())) {
                 killCounter = new KillCounter(mwData.getGameId());

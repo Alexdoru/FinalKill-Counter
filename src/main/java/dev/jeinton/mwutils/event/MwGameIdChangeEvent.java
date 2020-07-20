@@ -8,9 +8,13 @@ public class MwGameIdChangeEvent extends Event {
         DISCONNECT
     }
 
-    public EventType type;
+    private EventType type;
 
     public MwGameIdChangeEvent(EventType type) {
         this.type = type;
+    }
+
+    public EventType getType() {
+        return type;
     }
 }
