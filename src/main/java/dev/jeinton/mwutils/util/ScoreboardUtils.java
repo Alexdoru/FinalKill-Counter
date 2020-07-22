@@ -52,5 +52,19 @@ public class ScoreboardUtils {
         }
         return lines;
     }
+
+    public static String getSidebarTitle(Scoreboard scoreboard) {
+        ScoreObjective objective = scoreboard.getObjectiveInDisplaySlot(1);
+
+        if (objective == null) {
+            return "";
+        }
+
+        return objective.getDisplayName();
+    }
+
+    public static String getUnformattedSidebarTitle(Scoreboard scoreboard) {
+        return StringUtils.stripControlCodes(getSidebarTitle(scoreboard));
+    }
 }
 
