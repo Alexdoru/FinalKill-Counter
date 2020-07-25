@@ -2,14 +2,14 @@ package dev.p0ke.fkcounter;
 
 import com.orangemarshall.hudproperty.HudPropertyApi;
 
+import dev.jeinton.mwutils.MwScoreboardData;
+import dev.jeinton.mwutils.event.MwGameIdChangeEvent;
+import dev.jeinton.mwutils.MwScoreboardParser;
 import dev.p0ke.fkcounter.command.FKCounterCommand;
 import dev.p0ke.fkcounter.config.ConfigHandler;
 import dev.p0ke.fkcounter.gui.FKCounterGui;
 import dev.p0ke.fkcounter.util.KillCounter;
-import net.minecraft.client.gui.GuiDownloadTerrain;
 import net.minecraftforge.client.ClientCommandHandler;
-import net.minecraftforge.client.event.ClientChatReceivedEvent;
-import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -22,18 +22,15 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 public class FKCounterMod {
 	
     public static final String MODID = "fkcounter";
-    public static final String VERSION = "2.0";
+    public static final String VERSION = "2.1";
     
     private static FKCounterMod instance;
     
     private ConfigHandler configHandler;
     private HudPropertyApi hudManager;
-    
-    public static final String MW_GAME_START_MESSAGE = "       You have 6 minutes until the walls fall down!";
-    public static final String MW_GAME_END_MESSAGE = "                                 Mega Walls";
-    
+
     private KillCounter killCounter = null;
-    
+
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
     	configHandler = new ConfigHandler(event.getSuggestedConfigurationFile());
@@ -43,12 +40,12 @@ public class FKCounterMod {
     public void init(FMLInitializationEvent event) {
     	instance = this;
 		MinecraftForge.EVENT_BUS.register(this);
-		
+		MinecraftForge.EVENT_BUS.register(MwScoreboardParser.instance());
+
 		hudManager = HudPropertyApi.newInstance();
 		hudManager.register(new FKCounterGui());
 		
 		configHandler.loadConfig();
-		
     }
     
     @EventHandler
@@ -57,25 +54,26 @@ public class FKCounterMod {
 	}
     
     @SubscribeEvent
-    public void onChatMessage(ClientChatReceivedEvent event) {
-    	if(event.message.getUnformattedText().equals(MW_GAME_END_MESSAGE)){
-    		killCounter = null;
-    	}
-    	
-    	if(event.message.getUnformattedText().equals(MW_GAME_START_MESSAGE)) {
-    		killCounter = new KillCounter();
-    	}
-    	
-    	if(killCounter != null) {
-    		killCounter.onChatMessage(event);
-    	}
+    public void onMwGameIdChange(MwGameIdChangeEvent event) {
+        if (event.getType() == MwGameIdChangeEvent.EventType.CONNECT) {
+            MwScoreboardData mwData = MwScoreboardParser.instance().getMwScoreboardData();
+            if (killCounter == null || !killCounter.getGameId().equals(mwData.getGameId())) {
+                killCounter = new KillCounter(mwData.getGameId());
+            }
+        }
     }
 
+    public static boolean isInMwGame() {
+        MwScoreboardData mwData = MwScoreboardParser.instance().getMwScoreboardData();
+        return (mwData.getGameId() != null);
+    }
+
+    // TODO: fix this
     public void forceToggle() {
     	if(killCounter != null) {
     		killCounter = null;
     	} else {
-    		killCounter = new KillCounter();
+    		killCounter = new KillCounter(null);
     	}
     }
     
@@ -90,7 +88,7 @@ public class FKCounterMod {
     public HudPropertyApi getHudManager() {
     	return hudManager;
     }
-    
+
     public static FKCounterMod instance() {
     	return instance;
     }

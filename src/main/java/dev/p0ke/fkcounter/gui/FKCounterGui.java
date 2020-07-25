@@ -5,6 +5,7 @@ import java.awt.Color;
 import com.orangemarshall.hudproperty.IRenderer;
 import com.orangemarshall.hudproperty.util.ScreenPosition;
 
+import dev.jeinton.mwutils.MwScoreboardParser;
 import dev.p0ke.fkcounter.FKCounterMod;
 import dev.p0ke.fkcounter.config.ConfigSetting;
 import dev.p0ke.fkcounter.util.KillCounter;
@@ -23,7 +24,7 @@ public class FKCounterGui extends Gui implements IRenderer {
 			+ EnumChatFormatting.GREEN + "2" + EnumChatFormatting.GRAY + " / "
 			+ EnumChatFormatting.YELLOW + "3" + EnumChatFormatting.GRAY + " / "
 			+ EnumChatFormatting.BLUE + "4";
-	
+
 	private boolean dummy = false;
 
 	@Override
@@ -103,9 +104,11 @@ public class FKCounterGui extends Gui implements IRenderer {
 	
 	@Override
 	public boolean isEnabled() {
-		return (ConfigSetting.FKCOUNTER_HUD.getValue() && FKCounterMod.instance().getKillCounter() != null);
+		return (ConfigSetting.FKCOUNTER_HUD.getValue() &&
+				FKCounterMod.isInMwGame() &&
+				FKCounterMod.instance().getKillCounter() != null);
 	}
-	
+
 	private void drawMultilineString(String msg, int x, int y) {
 		for(String m : msg.split("\n")) {
 			Minecraft.getMinecraft().fontRendererObj.drawString(m, x, y, 0xFFFFFF);
