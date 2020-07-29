@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 import dev.jeinton.mwutils.MwScoreboardParser;
 import dev.p0ke.fkcounter.FKCounterMod;
-import net.minecraft.client.Minecraft;
 import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.ScorePlayerTeam;
@@ -22,13 +21,7 @@ import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class KillCounter {
-	
-	private static final String RED_WITHER_DEATH = "The Red Wither has died!";
-	private static final String GREEN_WITHER_DEATH = "The Green Wither has died!";
-	private static final String YELLOW_WITHER_DEATH = "The Yellow Wither has died!";
-	private static final String BLUE_WITHER_DEATH = "The Blue Wither has died!";
-	private static final String OWN_WITHER_DEATH = "Your wither has died. You can no longer respawn!";
-	private static final String DEATHMATCH = "All withers are dead! 10 seconds till deathmatch!";
+
 	private static final String PREP_PHASE = "Prepare your defenses!";
 
 	private static final String[] KILL_MESSAGES = {
@@ -100,8 +93,7 @@ public class KillCounter {
 	private static final String[] DEFAULT_PREFIXES = {
 			"c", "a", "e", "9"	
 		};
-	
-	private boolean[] deadWithers;
+
 	private String[] prefixes;
 	private HashMap<String, Integer>[] teamKills;
 	private ArrayList<String> deadPlayers;
@@ -114,7 +106,6 @@ public class KillCounter {
 
 		MinecraftForge.EVENT_BUS.register(this);
 
-		deadWithers = new boolean[TEAMS];
 		prefixes = new String[TEAMS];
 		teamKills = new HashMap[TEAMS];
 		deadPlayers = new ArrayList<String>();
@@ -139,32 +130,6 @@ public class KillCounter {
 		if(rawMessage.equals(PREP_PHASE)) {
 			setTeamPrefixes();
 		}
-
-		//Wither death detection
-		switch(rawMessage) {
-		case RED_WITHER_DEATH:
-			deadWithers[RED_TEAM] = true;
-			return;
-		case GREEN_WITHER_DEATH:
-			deadWithers[GREEN_TEAM] = true;
-			return;
-		case YELLOW_WITHER_DEATH:
-			deadWithers[YELLOW_TEAM] = true;
-			return;
-		case BLUE_WITHER_DEATH:
-			deadWithers[BLUE_TEAM] = true;
-			return;
-		case OWN_WITHER_DEATH:
-			String teamColor = Minecraft.getMinecraft().theWorld.getScoreboard().getObjectiveInDisplaySlot(1).getDisplayName().split("\u00a7")[1].substring(0, 1);
-			setWitherDead(teamColor);
-			return;
-		case DEATHMATCH:
-			for(int team = 0; team < TEAMS; team++) {
-				deadWithers[team] = true;
-			}
-			return;
-		}
-		
 		
 		//Kill message detection
 		for(String p : KILL_MESSAGES) {
@@ -178,7 +143,7 @@ public class KillCounter {
 				
 				removeKilledPlayer(killed, killedTeam);
 				
-				if(getWitherDead(killedTeam))
+				if(isWitherDead(killedTeam))
 					addKill(killer, killerTeam);
 				
 				break;
@@ -205,19 +170,9 @@ public class KillCounter {
 		if(!isValidTeam(team)) { return new HashMap<String, Integer>(); }
 		return teamKills[team];
 	}
-	
-	
-	private void setWitherDead(String color) {
-		int team = getTeamFromColor(color);
-		if(isValidTeam(team)) {
-			deadWithers[team] = true;
-		}
-	}
-	
-	private boolean getWitherDead(String color) {
-		int team = getTeamFromColor(color);
-		if(!isValidTeam(team)) { return false; }
-		return deadWithers[team];
+
+	private boolean isWitherDead(String color) {
+		return !MwScoreboardParser.instance().getMwScoreboardData().isWitherAlive(color);
 	}
 	
 	private void setTeamPrefixes() {
@@ -233,8 +188,8 @@ public class KillCounter {
 	private void removeKilledPlayer(String player, String color) {
 		int team = getTeamFromColor(color);
 		if(!isValidTeam(team)) { return; }
-		
-		if(deadWithers[team]) {
+
+		if(isWitherDead(color)) {
 			teamKills[team].remove(player);
 			deadPlayers.add(player);
 		}

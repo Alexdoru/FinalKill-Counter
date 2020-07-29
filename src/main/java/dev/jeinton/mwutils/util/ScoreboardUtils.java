@@ -53,6 +53,14 @@ public class ScoreboardUtils {
         return lines;
     }
 
+    public static List<String> getUnformattedSidebarText(List<String> scores) {
+        List<String> lines = new ArrayList<>(scores);
+        for (int i = 0; i < lines.size(); i++) {
+            lines.set(i, StringUtils.stripControlCodes(lines.get(i)));
+        }
+        return lines;
+    }
+
     public static String getSidebarTitle(Scoreboard scoreboard) {
         ScoreObjective objective = scoreboard.getObjectiveInDisplaySlot(1);
 
