@@ -3,14 +3,18 @@ package dev.jeinton.mwutils;
 import dev.jeinton.mwutils.util.ScoreboardUtils;
 import net.minecraft.scoreboard.Scoreboard;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MwScoreboardData {
-    private final Pattern GAME_ID_PATTERN = Pattern.compile("\\s*\\d+/\\d+/\\d+\\s+([\\d\\w]+)\\s*", Pattern.CASE_INSENSITIVE);
-    private final Pattern MW_TITLE_PATTERN = Pattern.compile("\\s*MEGA\\sWALLS\\s*", Pattern.CASE_INSENSITIVE);
-    private final Pattern PREGAME_LOBBY_PATTERN = Pattern.compile(".+[0-9]+/[0-9]+\\s*");
+    private static final Pattern GAME_ID_PATTERN = Pattern.compile("\\s*\\d+/\\d+/\\d+\\s+([\\d\\w]+)\\s*", Pattern.CASE_INSENSITIVE);
+    private static final Pattern MW_TITLE_PATTERN = Pattern.compile("\\s*MEGA\\sWALLS\\s*", Pattern.CASE_INSENSITIVE);
+    private static final Pattern PREGAME_LOBBY_PATTERN = Pattern.compile(".+[0-9]+/[0-9]+\\s*");
+    private static final Pattern WITHER_ALIVE_PATTERN = Pattern.compile("\\s*\\[.\\].*(?:HP|\u2764|\u2665).*", Pattern.CASE_INSENSITIVE);
+
+    private ArrayList<String> aliveWithers = new ArrayList<>();
 
     private String gameId = null;
 
@@ -24,28 +28,47 @@ public class MwScoreboardData {
             return;
         }
 
-        List<String> scores = ScoreboardUtils.getUnformattedSidebarText(scoreboard);
+        List<String> scoresColor = ScoreboardUtils.getSidebarText(scoreboard);
+        List<String> scoresRaw = ScoreboardUtils.getUnformattedSidebarText(scoresColor);
 
-        if (scores.size() == 0) {
+        if (scoresRaw.size() == 0) {
             return;
         }
 
-        Matcher matcher = GAME_ID_PATTERN.matcher(scores.get(0));
+        Matcher matcher = GAME_ID_PATTERN.matcher(scoresRaw.get(0));
         if (!matcher.matches()) {
             return;
         }
 
         gameId = matcher.group(1);
 
-        for (String line: scores) {
+        for (String line: scoresRaw) {
             if (PREGAME_LOBBY_PATTERN.matcher(line).matches()) {
                 gameId = null;
                 return;
             }
         }
+
+        for (int i = 0; i < scoresRaw.size(); i++) {
+            String line = scoresRaw.get(i);
+
+            if (WITHER_ALIVE_PATTERN.matcher(line).matches()) {
+                String lineColor = scoresColor.get(i);
+                String colorCode = lineColor.split("\u00a7")[1].substring(0, 1);
+                aliveWithers.add(colorCode);
+            }
+        }
+    }
+
+    public boolean isWitherAlive(String colorCode) {
+        return aliveWithers.contains(colorCode);
     }
 
     public String getGameId() {
         return gameId;
+    }
+
+    public List<String> getAliveWithers() {
+        return aliveWithers;
     }
 }
