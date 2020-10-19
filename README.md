@@ -1,2 +1,2 @@
-# Hypixel | Final Kill Counter by p0ke and BasicallyLouis
+# Hypixel | Final Kill Counter
 Final Kill Counter for the Hypixel Minigame Mega Walls
