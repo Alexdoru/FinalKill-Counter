@@ -1,6 +1,8 @@
 package dev.jeinton.mwutils;
 
+import dev.jeinton.mwutils.util.MinecraftUtils;
 import dev.jeinton.mwutils.util.ScoreboardUtils;
+import net.minecraft.client.Minecraft;
 import net.minecraft.scoreboard.Scoreboard;
 
 import java.util.ArrayList;
@@ -58,6 +60,30 @@ public class MwScoreboardData {
                 aliveWithers.add(colorCode);
             }
         }
+    }
+    
+    public static boolean isitPrepPhase() {
+    	
+    	Minecraft mc = Minecraft.getMinecraft();
+
+        if (mc.theWorld == null || !MinecraftUtils.isHypixel()) {
+            return false;
+        }
+
+        Scoreboard scoreboard = mc.theWorld.getScoreboard();
+        if (scoreboard == null) {
+            return false;
+        }
+        
+        List<String> scoresColor = ScoreboardUtils.getSidebarText(scoreboard);
+        List<String> scoresRaw = ScoreboardUtils.getUnformattedSidebarText(scoresColor);
+
+        if (scoresRaw.size() < 2) {
+            return false;
+        }
+
+        return scoresRaw.get(1).contains("Walls Fall:");
+		
     }
 
     public boolean isWitherAlive(String colorCode) {
